@@ -3,6 +3,7 @@
 Extends wxmplot.ImageCanvas with pixel info (d-spacing, 2-theta) and overlay motion callback.
 """
 
+import sys
 from typing import Callable
 
 import numpy as np
@@ -46,6 +47,14 @@ class ImageCanvas(_ImageCanvas):
         self._line_label_visual.visible = False
 
         self._canvas.native.Bind(wx.EVT_SIZE, self._on_canvas_size)
+
+        if sys.platform == "win32":
+            self._win_refresh_timer = wx.Timer(self)
+            self.Bind(wx.EVT_TIMER, self._on_win_refresh, self._win_refresh_timer)
+            self._win_refresh_timer.Start(33)
+
+    def _on_win_refresh(self, _: wx.TimerEvent) -> None:
+        self._canvas.native.Refresh(False)
 
     def _theme_green(self) -> tuple:
         c = get_theme().green

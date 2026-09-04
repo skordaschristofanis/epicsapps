@@ -98,7 +98,6 @@ class ADViewerView(wx.Panel):
         self._canvas_panel = wx.Panel(self, style=wx.CLIP_CHILDREN)
         self._canvas_panel.SetBackgroundColour(wx.BLACK)
         self._image_canvas = ImageCanvas(self._canvas_panel)
-        self._image_canvas.SetWindowStyleFlag(self._image_canvas.GetWindowStyleFlag() | wx.CLIP_CHILDREN)
 
         # Parent overlay buttons to the VisPy native widget so they render above it on Windows
         overlay_parent = self._image_canvas.native
