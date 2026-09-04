@@ -163,7 +163,16 @@ class ADViewerView(wx.Panel):
         self._image_canvas.set_overlay_motion_callback(self._on_canvas_panel_motion_xy)
         self._image_canvas.set_filter_gaps(self._filter_gaps)
 
+        if sys.platform == "win32":
+            self._integration_plot.Bind(wx.EVT_PAINT, self._on_integration_paint)
+            self._integration_plot.native.Bind(wx.EVT_PAINT, self._on_integration_paint)
+
         self._reposition_overlay_buttons()
+
+    def _on_integration_paint(self, event: wx.PaintEvent) -> None:
+        self._image_canvas.native.Refresh(False)
+        self._image_canvas.native.Update()
+        event.Skip()
 
     def bind_load_file(self, callback: _FileLoadCallback) -> None:
         self._load_file_cb = callback

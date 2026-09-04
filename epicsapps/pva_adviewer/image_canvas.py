@@ -54,7 +54,7 @@ class ImageCanvas(_ImageCanvas):
             self._win_refresh_timer.Start(16)
 
     def _on_win_refresh(self, _: wx.TimerEvent) -> None:
-        self._canvas.native.Refresh(False)
+        self._canvas.update()
         self._canvas.native.Update()
 
     def _theme_green(self) -> tuple:

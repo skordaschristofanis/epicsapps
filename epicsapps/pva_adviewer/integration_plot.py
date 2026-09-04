@@ -121,6 +121,10 @@ class IntegrationPlot(LinePlot):
 
         wx.CallAfter(self._reposition_children)
 
+    @property
+    def native(self) -> wx.Window:
+        return self._canvas.native
+
     def _on_size(self, event: wx.SizeEvent) -> None:
         super()._on_size(event)
         self._reposition_children()
