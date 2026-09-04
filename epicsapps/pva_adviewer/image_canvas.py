@@ -49,12 +49,15 @@ class ImageCanvas(_ImageCanvas):
         self._canvas.native.Bind(wx.EVT_SIZE, self._on_canvas_size)
 
         if sys.platform == "win32":
-            self._win_refresh_timer = wx.Timer(self)
-            self.Bind(wx.EVT_TIMER, self._on_win_refresh, self._win_refresh_timer)
-            self._win_refresh_timer.Start(33)
+            # Prevent this wx.Panel from auto-erasing its background over the embedded
+            # GLCanvas when sibling widgets or image updates trigger a repaint cycle.
+            self.SetBackgroundStyle(wx.BG_STYLE_PAINT)
+            self.Bind(wx.EVT_ERASE_BACKGROUND, lambda e: None)
+            self.Bind(wx.EVT_PAINT, self._on_panel_paint)
 
-    def _on_win_refresh(self, _: wx.TimerEvent) -> None:
-        self._canvas.native.Refresh(False)
+    def _on_panel_paint(self, _: wx.PaintEvent) -> None:
+        dc = wx.PaintDC(self)
+        del dc  # validate the paint region without painting (GLCanvas fills the area)
 
     def _theme_green(self) -> tuple:
         c = get_theme().green
