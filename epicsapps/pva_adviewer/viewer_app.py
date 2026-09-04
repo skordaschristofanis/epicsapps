@@ -42,7 +42,7 @@ class _PVAViewerFrame(wx.Frame):
     def __init__(self, pv_name: str = "", config: "PVAConfig | None" = None) -> None:
         cfg = config.config if config is not None else {}
         title = cfg.get("title") or "PVA Viewer"
-        super().__init__(None, title=title, size=(1200, 800))
+        super().__init__(None, title=title, size=(1200, 800), style=wx.DEFAULT_FRAME_STYLE | wx.CLIP_CHILDREN)
         _set_frame_icon(self)
 
         self._ad_model = ADViewerModel()

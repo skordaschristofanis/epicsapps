@@ -48,7 +48,7 @@ class ADViewerView(wx.Panel):
     """AD Viewer panel – renders detector images and exposes a clean API for the controller."""
 
     def __init__(self, parent: wx.Window) -> None:
-        super().__init__(parent)
+        super().__init__(parent, style=wx.CLIP_CHILDREN)
 
         self._current_frame: np.ndarray | None = None
         self._live_updates: bool = True
@@ -95,7 +95,7 @@ class ADViewerView(wx.Panel):
 
         self.SetBackgroundColour(wx.BLACK)
 
-        self._canvas_panel = wx.Panel(self)
+        self._canvas_panel = wx.Panel(self, style=wx.CLIP_CHILDREN)
         self._canvas_panel.SetBackgroundColour(wx.BLACK)
         self._image_canvas = ImageCanvas(self._canvas_panel)
 
