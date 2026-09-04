@@ -49,13 +49,13 @@ class ImageCanvas(_ImageCanvas):
         self._canvas.native.Bind(wx.EVT_SIZE, self._on_canvas_size)
 
         if sys.platform == "win32":
-            # Replicates what mouse-hover already does via _update_pixel_info → canvas.update() → SwapBuffers()
             self._win_refresh_timer = wx.Timer(self)
             self.Bind(wx.EVT_TIMER, self._on_win_refresh, self._win_refresh_timer)
             self._win_refresh_timer.Start(16)
 
     def _on_win_refresh(self, _: wx.TimerEvent) -> None:
-        self._canvas.update()
+        self._canvas.native.Refresh(False)
+        self._canvas.native.Update()
 
     def _theme_green(self) -> tuple:
         c = get_theme().green
