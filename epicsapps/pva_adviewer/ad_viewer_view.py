@@ -66,6 +66,7 @@ class ADViewerView(wx.Panel):
         self._mask_below: float | None = None
         self._pixel_size: float | None = 1.0
         self._percentile_level: float | None = None
+        self._current_interpolation: str = "nearest"
         self._integration_plot_visible: bool = True
         self._pv_panel: wx.Panel | None = None
         self._pv_controls_visible: bool = True
@@ -592,6 +593,8 @@ class ADViewerView(wx.Panel):
             on_hist_norm_changed=self._on_histogram_norm_changed,
             percentile_level=self._percentile_level,
             on_percentile_level_changed=self._apply_percentile_level,
+            interpolation=self._current_interpolation,
+            on_interpolation_changed=self._apply_interpolation,
         )
         btn_sz = self._settings_btn.GetSize()
         popup_w, _ = popup.GetSize()
@@ -680,6 +683,10 @@ class ADViewerView(wx.Panel):
     def _apply_percentile_level(self, level: "float | None") -> None:
         self._percentile_level = level
         self._image_canvas.set_percentile_level(level)
+
+    def _apply_interpolation(self, interp: str) -> None:
+        self._current_interpolation = interp
+        self._image_canvas.set_interpolation(interp)
 
     def _trigger_load_file(self) -> None:
         wildcard = (

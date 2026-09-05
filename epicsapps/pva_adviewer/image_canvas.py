@@ -127,6 +127,13 @@ class ImageCanvas(_ImageCanvas):
         self._mask_visual.visible = True
         self._canvas.update()
 
+    def set_interpolation(self, interp: str) -> None:
+        self._image_visual.interpolation = interp
+
+    @property
+    def interpolation(self) -> str:
+        return self._image_visual.interpolation
+
     def set_overlay_motion_callback(self, callback: Callable[[int, int], None] | None) -> None:
         """Set a callback invoked with parent-relative (x, y) on every mouse move."""
         self._overlay_motion_callback = callback
