@@ -165,7 +165,6 @@ class ADViewerView(wx.Panel):
 
         if sys.platform == "win32":
             self._integration_plot.Bind(wx.EVT_PAINT, self._on_integration_paint)
-            self._integration_plot.native.Bind(wx.EVT_PAINT, self._on_integration_paint)
 
         self._reposition_overlay_buttons()
 

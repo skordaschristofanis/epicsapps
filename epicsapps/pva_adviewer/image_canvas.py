@@ -27,6 +27,17 @@ class ImageCanvas(_ImageCanvas):
         self._two_theta_func = None
         self._overlay_motion_callback = None
 
+        if sys.platform == "win32":
+            self.SetBackgroundStyle(wx.BG_STYLE_PAINT)
+            self.SetWindowStyleFlag(self.GetWindowStyleFlag() | wx.CLIP_CHILDREN)
+            _native = self._canvas.native
+            _native.SetBackgroundStyle(wx.BG_STYLE_PAINT)
+            # _vispy_update normally calls Refresh() with eraseBackground=True, setting
+            # the erase flag so WM_ERASEBKGND fires in BeginPaint. Use Refresh(False) so
+            # the erase flag is never set — belt-and-suspenders on top of BG_STYLE_PAINT.
+            _native._vispy_update = lambda: _native.Refresh(False)
+            _native.Bind(wx.EVT_ERASE_BACKGROUND, lambda e: None)
+
         self._mask_visual = scene.visuals.Image(
             np.zeros((1, 1, 4), dtype=np.uint8),
             parent=self._view.scene,
@@ -54,7 +65,7 @@ class ImageCanvas(_ImageCanvas):
             self._win_refresh_timer.Start(16)
 
     def _on_win_refresh(self, _: wx.TimerEvent) -> None:
-        self._canvas.update()
+        self._canvas.native.Refresh(False)
         self._canvas.native.Update()
 
     def _theme_green(self) -> tuple:

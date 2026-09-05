@@ -5,6 +5,8 @@
 
 from typing import Callable
 
+import sys
+
 import numpy as np
 import wx
 from vispy import scene
@@ -24,6 +26,13 @@ class IntegrationPlot(LinePlot):
     def __init__(self, parent: wx.Window) -> None:
         """Initialise the IntegrationPlot."""
         super().__init__(parent)
+
+        if sys.platform == "win32":
+            self.SetWindowStyleFlag(self.GetWindowStyleFlag() | wx.CLIP_CHILDREN)
+            _native = self._canvas.native
+            _native.SetBackgroundStyle(wx.BG_STYLE_PAINT)
+            _native._vispy_update = lambda: _native.Refresh(False)
+            _native.Bind(wx.EVT_ERASE_BACKGROUND, lambda e: None)
 
         self._poni_text: str = "No calibration loaded"
         self._poni_loaded: bool = False
