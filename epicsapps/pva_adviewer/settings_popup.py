@@ -16,12 +16,15 @@ __all__ = ["ImageSettingsPopup"]
 _SECTION_PAD = 14
 _ROW_PAD = 8
 
-INTERPOLATION_OPTIONS: tuple[str, ...] = (
-    'nearest', 'linear', 'bilinear', 'hanning', 'hamming', 'hermite',
-    'kaiser', 'quadric', 'bicubic', 'catrom', 'mitchell', 'gaussian',
-    'spline16', 'spline36', 'lanczos', 'lanczos2', 'lanczos3',
-    'blackman', 'bessel', 'sinc', 'cubic',
-)
+try:
+    from vispy.visuals.image import ImageVisual as _ImageVisual
+    INTERPOLATION_OPTIONS: tuple[str, ...] = tuple(
+        n for n in _ImageVisual.interpolation_functions if n != "custom"
+    )
+except Exception:
+    INTERPOLATION_OPTIONS = ('nearest', 'linear', 'bilinear', 'hanning', 'hamming', 'hermite',
+                             'kaiser', 'quadric', 'bicubic', 'catrom', 'mitchell', 'gaussian',
+                             'spline16', 'spline36', 'lanczos', 'blackman', 'bessel', 'sinc', 'cubic')
 
 
 class ImageSettingsPopup(wx.Frame):
@@ -69,6 +72,7 @@ class ImageSettingsPopup(wx.Frame):
         self._on_hist_norm_changed = on_hist_norm_changed
         self._on_percentile_level_changed = on_percentile_level_changed
         self._on_interpolation_changed = on_interpolation_changed
+        self._interpolation_options = INTERPOLATION_OPTIONS
 
         self.SetBackgroundColour(get_theme().bright_black)
 
@@ -140,7 +144,8 @@ class ImageSettingsPopup(wx.Frame):
 
     def _build_display(
         self, parent, sizer, colormap: str, bin_method: str, hist_norm: str,
-        interpolation: str = "nearest", first: bool = False,
+        interpolation: str = "nearest",
+        first: bool = False,
     ) -> None:
         self._section_header(parent, sizer, "DISPLAY", first=first)
 
@@ -180,9 +185,9 @@ class ImageSettingsPopup(wx.Frame):
 
         interp_row = wx.BoxSizer(wx.HORIZONTAL)
         interp_row.Add(self._lbl(parent, "Interpolation"), 0, wx.ALIGN_CENTER_VERTICAL | wx.RIGHT, 8)
-        self._interp_choice = FlatCombo(parent, choices=list(INTERPOLATION_OPTIONS))
-        cur = interpolation if interpolation in INTERPOLATION_OPTIONS else "nearest"
-        self._interp_choice.SetSelection(INTERPOLATION_OPTIONS.index(cur))
+        self._interp_choice = FlatCombo(parent, choices=list(self._interpolation_options))
+        cur = interpolation if interpolation in self._interpolation_options else "nearest"
+        self._interp_choice.SetSelection(self._interpolation_options.index(cur))
         self._interp_choice.Bind(wx.EVT_CHOICE, self._evt_interpolation)
         interp_row.Add(self._interp_choice, 1, wx.EXPAND)
         sizer.Add(interp_row, 0, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.TOP, _ROW_PAD)
@@ -322,7 +327,7 @@ class ImageSettingsPopup(wx.Frame):
                 return
 
     def _evt_interpolation(self, label: str) -> None:
-        if label in INTERPOLATION_OPTIONS and self._on_interpolation_changed:
+        if label in self._interpolation_options and self._on_interpolation_changed:
             self._on_interpolation_changed(label)
 
     def _evt_hist_norm(self, label: str) -> None:

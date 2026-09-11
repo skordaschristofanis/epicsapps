@@ -59,6 +59,7 @@ class ADViewerView(wx.Panel):
         self._last_histogram_update: float = 0.0
         self._last_pushed_levels: tuple[float, float] | None = None
         self._current_colormap: str = _DEFAULT_COLORMAP
+        self._is_rgb: bool = False
         self._current_npt: int = _DEFAULT_NPT
         self._current_unit: str = _INTEGRATION_UNITS[0]
         self._poni_label_text: str = "No calibration loaded"
@@ -276,8 +277,17 @@ class ADViewerView(wx.Panel):
         """Forward frame to the GPU every call and throttle the side widgets."""
         _log.info(f"display_frame: shape={frame.shape}, dtype={frame.dtype}, min={frame.min()}, max={frame.max()}")
         self._current_frame = frame
-        display_2d = frame.mean(axis=2) if frame.ndim == 3 else frame.copy()
-        self._image_canvas.set_image(display_2d)
+        is_rgb = frame.ndim == 3 and frame.shape[2] in (3, 4)
+        was_rgb = self._is_rgb
+        self._is_rgb = is_rgb
+        if is_rgb:
+            self._image_canvas.set_image(frame)
+        else:
+            if was_rgb:
+                # Restore the user's colormap when switching back from an RGB source.
+                self._image_canvas.set_colormap(self._current_colormap)
+                self._intensity_histogram.set_colormap(self._current_colormap)
+            self._image_canvas.set_image(frame if frame.ndim == 2 else frame.mean(axis=2))
         _log.info(f"display_frame: called set_image on canvas")
 
         now = time.perf_counter()
@@ -285,9 +295,10 @@ class ADViewerView(wx.Panel):
             return
         self._last_histogram_update = now
         self._intensity_histogram.set_data(frame, auto_scale=False)
-        lo, hi = self._image_canvas.get_contrast_range()
-        self._intensity_histogram.set_levels(lo, hi)
-        self._last_pushed_levels = (lo, hi)
+        if self._auto_scale:
+            lo, hi = self._image_canvas.get_contrast_range()
+            self._intensity_histogram.set_levels(lo, hi)
+            self._last_pushed_levels = (lo, hi)
 
     def set_live_updates(self, enabled: bool) -> None:
         self._live_updates = enabled
@@ -628,8 +639,9 @@ class ADViewerView(wx.Panel):
 
     def _apply_colormap(self, colormap: str) -> None:
         self._current_colormap = colormap
-        self._image_canvas.set_colormap(colormap)
-        self._intensity_histogram.set_colormap(colormap)
+        if not self._is_rgb:
+            self._image_canvas.set_colormap(colormap)
+            self._intensity_histogram.set_colormap(colormap)
 
     def _apply_auto_scale(self, enabled: bool) -> None:
         self._auto_scale = enabled
